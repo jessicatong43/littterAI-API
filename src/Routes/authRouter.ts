@@ -3,5 +3,5 @@ import Contollers from '../Controllers';
 
 export const authRouter = express.Router();
 
-authRouter.post('/login', Contollers.Auth.register);
+authRouter.post('/register', Contollers.Auth.register);
 export default authRouter;

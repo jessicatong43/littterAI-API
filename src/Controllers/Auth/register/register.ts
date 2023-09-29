@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
-import { loginSchema } from './bodySchema';
+import { registerSchema } from './bodySchema';
+import Models from '../../../Models';
 
 export const registerController = async (req: Request, res: Response) => {
-  const { error } = loginSchema.validate(req.body);
+  const { error } = registerSchema.validate(req.body);
   if (error) {
     res.status(400).send({ message: error.details[0].message });
     return;
   }
   try {
-    res.send('Check!');
-  } catch (error) {}
+    const { code, data } = await Models.authModels.register(req.body);
+    res.status(code).send(data);
+  } catch (error) {
+  }
 };

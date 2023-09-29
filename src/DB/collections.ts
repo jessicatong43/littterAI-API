@@ -27,5 +27,5 @@ const getCollection = async (
 };
 
 export const getUsersCollection = () => getCollection('users');
-export const getQuestCollection = () => getCollection('userCategoryCount');
-export const getQuestInfoCollection = () => getCollection('uploads');
+export const getCatCountCollection = () => getCollection('userCategoryCount');
+export const getInfoCollection = () => getCollection('uploads');
