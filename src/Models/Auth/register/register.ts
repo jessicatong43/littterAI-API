@@ -15,7 +15,10 @@ setUsersCollection();
 interface Body {email: string, password: string, username: string, firstName: string, lastName: string};
 
 export const register = async (body: Body) => {
-  const { email, password, username, firstName, lastName } = body;
+  let { email, password, username, firstName, lastName } = body;
+  const displayUsername = username;
+  username = username.toLowerCase();
+
   try {
     const userResult = await usersCollection.findOne({username});
     if (userResult) {
@@ -29,6 +32,7 @@ export const register = async (body: Body) => {
     const encryptedPassword = await bcrypt.hash(password, 10);
     const payload = {
       username,
+      displayUsername,
       email,
       password: encryptedPassword,
       firstName: `${firstName[0].toUpperCase()}${firstName.substring(1)}`,
@@ -55,7 +59,7 @@ export const register = async (body: Body) => {
       code: 201,
       data: {
         userId: insertResult.insertedId.toHexString(),
-        username,
+        username: displayUsername,
         firstName,
         lastName,
         token
