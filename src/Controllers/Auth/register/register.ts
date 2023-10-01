@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { registerSchema } from './bodySchema';
+import { logError } from '../../../Errors/logError';
 import Models from '../../../Models';
 
 export const registerController = async (req: Request, res: Response) => {
@@ -11,6 +12,10 @@ export const registerController = async (req: Request, res: Response) => {
   try {
     const { code, data } = await Models.authModels.register(req.body);
     res.status(code).send(data);
-  } catch (error) {
+  } catch (error: any) {
+    await logError(
+      error,
+      'An error occured while executing register controller'
+    );
   }
 };
