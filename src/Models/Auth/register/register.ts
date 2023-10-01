@@ -1,6 +1,8 @@
 import { Collection } from 'mongodb';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+
+import { logError } from '../../../Errors/logError';
 import { getUsersCollection } from '../../../DB/collections';
 import { createUserPhotoDoc } from './createUserPhotoDoc';
 
@@ -86,7 +88,9 @@ export const register = async (body: Body) => {
         token,
       },
     };
-  } catch (err) {
+  } catch (err: any) {
+    await logError(err, 'An error occured while executing createUserPhotoDoc');
+
     return {
       code: 400,
       data: 'There was an error processing your registration request.',

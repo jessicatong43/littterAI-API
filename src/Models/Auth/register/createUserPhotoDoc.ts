@@ -1,5 +1,6 @@
-import { Collection, ObjectId } from "mongodb";
-import { getCatCountCollection } from "../../../DB/collections";
+import { Collection, ObjectId } from 'mongodb';
+import { getCatCountCollection } from '../../../DB/collections';
+import { logError } from '../../../Errors/logError';
 
 let catCountCollection: Collection;
 
@@ -8,7 +9,11 @@ const setCatCountCollection = async () => {
 };
 setCatCountCollection();
 
-export const createUserPhotoDoc = async (userId: ObjectId, username: string, email: string) => {
+export const createUserPhotoDoc = async (
+  userId: ObjectId,
+  username: string,
+  email: string
+) => {
   try {
     const payload = {
       userId,
@@ -25,11 +30,12 @@ export const createUserPhotoDoc = async (userId: ObjectId, username: string, ema
         other: 0,
         unknown: 0,
       },
-      totalUploads: 0
-    }
+      totalUploads: 0,
+    };
 
     catCountCollection.insertOne(payload);
-  } catch (err) {
+  } catch (err: any) {
+    await logError(err, 'An error occured while executing createUserPhotoDoc');
     console.log(err);
   }
-}
+};
