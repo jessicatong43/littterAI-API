@@ -1,8 +1,10 @@
-import { Collection } from "mongodb";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { getUsersCollection } from "../../../DB/collections";
-import { createUserPhotoDoc } from "./createUserPhotoDoc";
+import { Collection } from 'mongodb';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+import { logError } from '../../../Errors/logError';
+import { getUsersCollection } from '../../../DB/collections';
+import { createUserPhotoDoc } from './createUserPhotoDoc';
 
 const jwtSecret = process.env.JWT_SECRET;
 let usersCollection: Collection;
@@ -12,21 +14,34 @@ const setUsersCollection = async () => {
 };
 setUsersCollection();
 
-interface Body {email: string, password: string, username: string, firstName: string, lastName: string};
+interface Body {
+  email: string;
+  password: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  zipCode: string;
+}
 
 export const register = async (body: Body) => {
-  let { email, password, username, firstName, lastName } = body;
+  let { email, password, username, firstName, lastName, zipCode } = body;
   const displayUsername = username;
   username = username.toLowerCase();
 
   try {
-    const userResult = await usersCollection.findOne({username});
+    const userResult = await usersCollection.findOne({ username });
     if (userResult) {
-      return {code: 400, data: `A user with the name ${username} already exists.`};
+      return {
+        code: 400,
+        data: `A user with the name ${username} already exists.`,
+      };
     }
-    const emailResult = await usersCollection.findOne({email});
+    const emailResult = await usersCollection.findOne({ email });
     if (emailResult) {
-      return {code: 400, data: `A user with the email ${email} already exists.`};
+      return {
+        code: 400,
+        data: `A user with the email ${email} already exists.`,
+      };
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -36,21 +51,28 @@ export const register = async (body: Body) => {
       email,
       password: encryptedPassword,
       firstName: `${firstName[0].toUpperCase()}${firstName.substring(1)}`,
-      lastName: `${lastName[0].toUpperCase()}${lastName.substring(1)}`
-    }
+      lastName: `${lastName[0].toUpperCase()}${lastName.substring(1)}`,
+      zipCode,
+    };
     const insertResult = await usersCollection.insertOne(payload);
 
     if (!insertResult.acknowledged) {
-      return { code: 400, data: 'There was an error processing your registration request.'}
+      return {
+        code: 400,
+        data: 'There was an error processing your registration request.',
+      };
     }
 
     let token;
 
-    if (typeof jwtSecret === "string") {
-      token = jwt.sign({
-        userId: insertResult.insertedId.toHexString(),
-        username},
-        jwtSecret)
+    if (typeof jwtSecret === 'string') {
+      token = jwt.sign(
+        {
+          userId: insertResult.insertedId.toHexString(),
+          username,
+        },
+        jwtSecret
+      );
     }
 
     await createUserPhotoDoc(insertResult.insertedId, username, email);
@@ -62,11 +84,16 @@ export const register = async (body: Body) => {
         username: displayUsername,
         firstName,
         lastName,
-        token
-      }
+        zipCode,
+        token,
+      },
     };
+  } catch (err: any) {
+    await logError(err, 'An error occured while executing createUserPhotoDoc');
 
-  } catch (err) {
-    return {code: 400, data: 'There was an error processing your registration request.'};
+    return {
+      code: 400,
+      data: 'There was an error processing your registration request.',
+    };
   }
 };
